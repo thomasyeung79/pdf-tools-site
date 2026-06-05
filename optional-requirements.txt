@@ -1,0 +1,15 @@
+# PDF 转 Word（优先使用 pdf2docx，否则自动降级为图片渲染方案）
+pdf2docx>=0.5.0
+
+# PDF 转图片、压缩 PDF、水印（推荐安装，新增功能的核心依赖）
+pymupdf>=1.25.0
+
+# PDF 转 Word 图片降级方案
+python-docx>=1.1.0
+
+# 图片 OCR 识别（推荐安装，两个选一即可）
+rapidocr-onnxruntime>=1.0.0
+# pytesseract>=0.3.0   # 使用 Tesseract 时需要额外安装 Tesseract 程序
+
+# Word 转 PDF 的 Microsoft Word 自动导出方案（仅 Windows）
+pywin32>=308.0

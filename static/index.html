@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PDF 工具站 · 免费在线处理</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="theme-toggle-wrap">
+    <button id="themeToggle" class="theme-btn" title="切换暗色模式" aria-label="切换暗色模式">
+      <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+
+  <header class="topbar">
+    <div>
+      <h1>📄 PDF 工具站</h1>
+      <p class="tagline">文档转换、编辑、导出，一键完成 · 本地处理，文件不上传第三方</p>
+    </div>
+    <div class="header-actions">
+      <span class="badge">🛡️ 本地处理</span>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <!-- 导出位置 -->
+    <section class="export-info">
+      <div>
+        <h2>💾 导出位置</h2>
+        <p>生成的文件自动下载到浏览器默认目录，服务器同时保留副本。</p>
+      </div>
+      <code id="outputDir">正在读取...</code>
+    </section>
+
+    <!-- 筛选 / 分类标签 -->
+    <nav class="filter-bar">
+      <button class="filter-btn active" data-filter="all">全部工具</button>
+      <button class="filter-btn" data-filter="pdf">PDF 处理</button>
+      <button class="filter-btn" data-filter="convert">格式转换</button>
+      <button class="filter-btn" data-filter="excel">表格工具</button>
+      <button class="filter-btn" data-filter="image">图片工具</button>
+    </nav>
+
+    <div class="tool-grid" id="toolGrid">
+
+      <!-- ─── 下载 ─── -->
+      <article class="card" data-category="pdf">
+        <div class="card-header">
+          <span class="card-icon">🌐</span>
+          <h2>PDF 链接下载</h2>
+        </div>
+        <p class="card-desc">粘贴普通 PDF 链接或含 course_pdf 参数的阅读页链接直接下载。</p>
+        <form action="/api/download-pdf" method="post">
+          <div class="input-group">
+            <input name="url" type="url" placeholder="https://example.com/file.pdf" required>
+          </div>
+          <div class="input-group">
+            <input name="filename" type="text" value="download.pdf" placeholder="保存文件名">
+          </div>
+          <button type="submit">⬇ 下载 PDF</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── PDF 转 Word ─── -->
+      <article class="card" data-category="convert">
+        <div class="card-header">
+          <span class="card-icon">📝</span>
+          <h2>PDF 转 Word</h2>
+        </div>
+        <p class="card-desc">将 PDF 转为可编辑的 Word 文档。优先保留文字，备用方案渲染为图片。</p>
+        <form action="/api/pdf-to-word" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".pdf" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽 PDF 到此处，或点击选择</span>
+            </div>
+          </div>
+          <button type="submit">转换</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── Word 转 PDF ─── -->
+      <article class="card" data-category="convert">
+        <div class="card-header">
+          <span class="card-icon">📄</span>
+          <h2>Word 转 PDF</h2>
+        </div>
+        <p class="card-desc">上传 Word 文档，转为标准 PDF 格式。优先使用 LibreOffice。</p>
+        <form action="/api/word-to-pdf" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".doc,.docx" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽 Word 文档到此处</span>
+            </div>
+          </div>
+          <button type="submit">转换</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── 压缩 PDF ─── -->
+      <article class="card new" data-category="pdf">
+        <div class="card-header">
+          <span class="card-icon">🗜️</span>
+          <h2>压缩 PDF</h2>
+          <span class="tag-new">新</span>
+        </div>
+        <p class="card-desc">通过降低图片质量减小 PDF 体积。三种压缩等级可选。</p>
+        <form action="/api/compress-pdf" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".pdf" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽 PDF 到此处</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <select name="quality">
+              <option value="high">高质量（小幅度压缩）</option>
+              <option value="medium" selected>中等（推荐）</option>
+              <option value="low">低质量（最大压缩）</option>
+            </select>
+          </div>
+          <button type="submit">压缩</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── 合并 PDF ─── -->
+      <article class="card" data-category="pdf">
+        <div class="card-header">
+          <span class="card-icon">🔗</span>
+          <h2>合并 PDF</h2>
+        </div>
+        <p class="card-desc">将多个 PDF 合并为一个文件。选择文件后按名称排序合并。</p>
+        <form action="/api/merge-pdf" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="files" type="file" accept=".pdf" multiple required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽多个 PDF 到此处</span>
+            </div>
+          </div>
+          <div class="file-list"></div>
+          <button type="submit">合并</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── 拆分 PDF ─── -->
+      <article class="card" data-category="pdf">
+        <div class="card-header">
+          <span class="card-icon">✂️</span>
+          <h2>拆分 PDF</h2>
+        </div>
+        <p class="card-desc">按页码提取部分页面，或拆分指定页码范围。</p>
+        <form action="/api/split-pdf" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".pdf" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽 PDF 到此处</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <input name="pages" type="text" placeholder="页码范围：1,3-5（留空=全部）">
+          </div>
+          <button type="submit">拆分</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── PDF 转图片 ─── -->
+      <article class="card new" data-category="pdf">
+        <div class="card-header">
+          <span class="card-icon">🖼️</span>
+          <h2>PDF 转图片</h2>
+          <span class="tag-new">新</span>
+        </div>
+        <p class="card-desc">将 PDF 每页转为 PNG 图片，打包为 ZIP 下载。</p>
+        <form action="/api/pdf-to-images" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".pdf" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽 PDF 到此处</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <select name="dpi">
+              <option value="72">低分辨率（72 DPI）</option>
+              <option value="150" selected>中分辨率（150 DPI）</option>
+              <option value="300">高分辨率（300 DPI）</option>
+              <option value="600">极高（600 DPI）</option>
+            </select>
+          </div>
+          <button type="submit">生成图片</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── 图片合成 PDF ─── -->
+      <article class="card new" data-category="convert">
+        <div class="card-header">
+          <span class="card-icon">📑</span>
+          <h2>图片合成 PDF</h2>
+          <span class="tag-new">新</span>
+        </div>
+        <p class="card-desc">将多张图片（JPG/PNG/WebP）合并为一个 PDF，每张图片一页。</p>
+        <form action="/api/images-to-pdf" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="files" type="file" accept=".png,.jpg,.jpeg,.webp,.bmp,.tif,.tiff" multiple required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽多张图片到此处</span>
+            </div>
+          </div>
+          <div class="file-list"></div>
+          <button type="submit">合成 PDF</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── Excel 转 PDF ─── -->
+      <article class="card" data-category="excel">
+        <div class="card-header">
+          <span class="card-icon">📊</span>
+          <h2>Excel 转 PDF</h2>
+        </div>
+        <p class="card-desc">将 Excel / CSV 表格转为横向 PDF，前 200 行，适合打印。</p>
+        <form action="/api/excel-to-pdf" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".xlsx,.xls,.csv" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽 Excel 文件到此处</span>
+            </div>
+          </div>
+          <button type="submit">转换</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── Excel 转图片 ─── -->
+      <article class="card" data-category="excel">
+        <div class="card-header">
+          <span class="card-icon">🖼️</span>
+          <h2>Excel 转图片</h2>
+        </div>
+        <p class="card-desc">将表格渲染为 PNG 图片，保留样式（前 80 行）。</p>
+        <form action="/api/excel-to-image" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".xlsx,.xls,.csv" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽 Excel 文件到此处</span>
+            </div>
+          </div>
+          <button type="submit">生成图片</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── Excel 转 CSV ─── -->
+      <article class="card new" data-category="excel">
+        <div class="card-header">
+          <span class="card-icon">📋</span>
+          <h2>Excel / CSV 互转</h2>
+          <span class="tag-new">新</span>
+        </div>
+        <p class="card-desc">Excel 与 CSV（UTF-8）互相转换。</p>
+        <form action="/api/excel-to-csv" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".xlsx,.xls,.csv" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽文件到此处</span>
+            </div>
+          </div>
+          <button type="submit">转换</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── 图片转 Excel ─── -->
+      <article class="card" data-category="image">
+        <div class="card-header">
+          <span class="card-icon">📊</span>
+          <h2>图片转 Excel</h2>
+        </div>
+        <p class="card-desc">将图片嵌入 Excel 文件。如需 OCR 文字识别，请使用下方"提取文字"。</p>
+        <form action="/api/image-to-excel" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".png,.jpg,.jpeg,.webp" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽图片到此处</span>
+            </div>
+          </div>
+          <button type="submit">生成 Excel</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── 图片提取文字 ─── -->
+      <article class="card" data-category="image">
+        <div class="card-header">
+          <span class="card-icon">🔤</span>
+          <h2>图片提取文字 (OCR)</h2>
+        </div>
+        <p class="card-desc">识别图片中的文字，支持中文和英文。</p>
+        <form action="/api/image-to-text" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".png,.jpg,.jpeg,.webp,.bmp,.tif,.tiff" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽图片到此处</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <select name="language">
+              <option value="ch">中文 + 英文</option>
+              <option value="en">仅英文</option>
+            </select>
+          </div>
+          <button type="submit">提取文字</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── PDF 信息 ─── -->
+      <article class="card new" data-category="pdf">
+        <div class="card-header">
+          <span class="card-icon">📋</span>
+          <h2>PDF 信息查看</h2>
+          <span class="tag-new">新</span>
+        </div>
+        <p class="card-desc">查看 PDF 页数、大小、版本、元数据等详细信息。</p>
+        <form action="/api/pdf-info" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".pdf" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽 PDF 到此处</span>
+            </div>
+          </div>
+          <button type="submit">查看信息</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── PDF 水印 ─── -->
+      <article class="card" data-category="pdf">
+        <div class="card-header">
+          <span class="card-icon">💧</span>
+          <h2>PDF 添加水印</h2>
+        </div>
+        <p class="card-desc">为 PDF 每页添加自定义文字水印，支持调节透明度和角度。</p>
+        <form action="/api/pdf-watermark" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".pdf" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽 PDF 到此处</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <input name="text" type="text" value="机密" placeholder="水印文字">
+          </div>
+          <div class="split-inputs">
+            <div class="input-group">
+              <label>透明度</label>
+              <input name="opacity" type="number" step="0.05" min="0.05" max="1" value="0.3">
+            </div>
+            <div class="input-group">
+              <label>角度</label>
+              <select name="angle">
+                <option value="45">45°</option>
+                <option value="0">0°（水平）</option>
+                <option value="90">90°</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit">添加水印</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── PDF 去水印 ─── -->
+      <article class="card new" data-category="pdf">
+        <div class="card-header">
+          <span class="card-icon">🧹</span>
+          <h2>PDF 去水印</h2>
+          <span class="tag-new">新</span>
+        </div>
+        <p class="card-desc">自动检测或按文字移除 PDF 中的重复水印。支持文字模式和高级图片擦除模式。</p>
+        <form action="/api/remove-watermark" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".pdf" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽 PDF 到此处</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>模式</label>
+            <select name="mode">
+              <option value="auto">自动检测（推荐）</option>
+              <option value="text">指定文字移除</option>
+              <option value="image">图片擦除（需 opencv）</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <input name="watermark_text" type="text" placeholder="水印文字（指定文字模式必填）">
+          </div>
+          <button type="submit">去水印</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+      <!-- ─── 旋转 PDF ─── -->
+      <article class="card new" data-category="pdf">
+        <div class="card-header">
+          <span class="card-icon">🔄</span>
+          <h2>旋转 PDF</h2>
+          <span class="tag-new">新</span>
+        </div>
+        <p class="card-desc">旋转 PDF 所有页面，支持 90°、180°、270°。</p>
+        <form action="/api/rotate-pdf" method="post" enctype="multipart/form-data">
+          <div class="drop-zone" data-form="parent">
+            <input name="file" type="file" accept=".pdf" required>
+            <div class="drop-placeholder">
+              <span class="drop-icon">📂</span>
+              <span>拖拽 PDF 到此处</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <select name="angle">
+              <option value="90">顺时针 90°</option>
+              <option value="180">180°</option>
+              <option value="270">逆时针 90°（270°）</option>
+            </select>
+          </div>
+          <button type="submit">旋转</button>
+          <p class="form-status" role="status"></p>
+        </form>
+      </article>
+
+    </div>
+
+    <footer class="site-footer">
+      <p>所有文件在本地服务器处理，不会被上传到第三方服务。处理完成后文件保留在服务器 storage 目录，定期清理。</p>
+    </footer>
+  </main>
+
+  <!-- Toast -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- 信息弹窗 -->
+  <dialog id="infoDialog" class="info-dialog">
+    <div class="dialog-header">
+      <span class="dialog-icon">📋</span>
+      <h3>PDF 信息</h3>
+    </div>
+    <div class="dialog-body" id="infoBody"></div>
+    <div class="dialog-footer">
+      <button class="dialog-close-btn" onclick="document.getElementById('infoDialog').close()">关闭</button>
+    </div>
+  </dialog>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
